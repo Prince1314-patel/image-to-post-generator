@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Idea to Social Post</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <h1>💡 Idea to Social Post</h1>
+        <p class="app-description">
+            Transform your ideas into engaging social media content with AI
+        </p>
+
+        <!-- Platform Selection -->
+        <div class="platform-selector">
+            {{ platform_selector }}
+        </div>
+
+        <!-- Idea Input -->
+        <div class="idea-input">
+            {{ idea_input }}
+        </div>
+
+        <!-- Generate Button -->
+        {{ generate_button }}
+
+        <!-- Output Container -->
+        <div class="output-container">
+            <div class="post-title">{{ title }}</div>
+            <div class="post-content">{{ content }}</div>
+            <div class="divider"></div>
+            <div class="hashtags">{{ hashtags }}</div>
+            
+            <!-- Copy Buttons -->
+            <div class="copy-buttons">
+                <div class="button-grid">
+                    {{ copy_buttons }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="static/js/script.js"></script>
+</body>
+</html> 

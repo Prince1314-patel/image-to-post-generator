@@ -1,0 +1,172 @@
+/* Import modern font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* Updated Color Palette */
+:root {
+    --primary-color: #357ABD;  /* Darker blue for better contrast */
+    --secondary-color: #50E3C2;
+    --background-color: #FAF9F6;  /* Warmer off-white */
+    --card-bg: #FFFFFF;
+    --text-primary: #2C2C2C;  /* Softer dark gray */
+    --text-secondary: #4A4A4A;  /* Slightly lighter gray */
+}
+
+/* Global Styles */
+.stApp {
+    background: var(--background-color);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+}
+
+/* Header Styles */
+h1 {
+    color: var(--text-primary) !important;
+    font-weight: 800 !important;
+}
+
+/* Labels and Text */
+.stSelectbox label, .stTextArea label {
+    color: var(--text-primary) !important;
+    font-weight: 600;
+}
+
+p {
+    color: var(--text-primary) !important;
+}
+
+/* Input Container */
+.input-container {
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    margin-bottom: 2rem;
+}
+
+/* Button Styles */
+.stButton button {
+    width: 100%;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stButton button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(53, 122, 189, 0.3);
+}
+
+.stButton button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(53, 122, 189, 0.5);
+}
+
+/* Output Container */
+.output-container {
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    margin: 1rem 0;
+    border: 1px solid #E1E4E8;
+    display: none;  /* Hide by default */
+}
+
+.output-container.visible {
+    display: block;  /* Show when has content */
+}
+
+/* Post Elements */
+.post-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    line-height: 1.4;
+}
+
+.post-content {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    white-space: pre-wrap;
+}
+
+/* Hashtag Styles */
+.hashtag {
+    display: inline-block;
+    padding: 0.4rem 0.8rem;
+    margin: 0.3rem;
+    background: #E8F0FE;  /* Light blue background */
+    border-radius: 2rem;
+    font-size: 0.9rem;
+    color: var(--text-primary);  /* High contrast text */
+    font-weight: 500;
+    transition: transform 0.2s;
+}
+
+.hashtag:hover {
+    transform: translateY(-1px);
+}
+
+/* Divider */
+.divider {
+    border-top: 1px solid #E1E4E8;
+    margin: 1.5rem 0;
+}
+
+/* Copy Buttons */
+.copy-buttons {
+    margin-top: 1.5rem;
+    display: none;  /* Hide by default */
+}
+
+.copy-buttons.visible {
+    display: block;  /* Show when has content */
+}
+
+.copy-btn {
+    background: #F8F9FA !important;
+    color: var(--text-primary) !important;
+    border: 1px solid #E1E4E8 !important;
+    transition: all 0.2s;
+}
+
+.copy-btn:hover {
+    background: #F0F7FF !important;
+    border-color: var(--primary-color) !important;
+}
+
+/* Platform Selector */
+.platform-selector {
+    margin-bottom: 1.5rem;
+}
+
+/* Textarea - Fixed to ensure visibility */
+.stTextArea textarea {
+    background-color: #FFFFFF !important;  /* White background */
+    color: #2C2C2C !important;             /* Dark gray text */
+    border-radius: 0.5rem;
+    border: 1px solid #E1E4E8;
+    font-size: 1.1rem;
+    padding: 1rem;
+}
+
+.stTextArea textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(53, 122, 189, 0.2);
+}
+
+.stTextArea textarea::placeholder {
+    color: #888888 !important;             /* Medium gray placeholder */
+}
+
+/* Fix for select box text */
+.stSelectbox div[data-baseweb="select"] span {
+    color: var(--text-primary) !important;
+} 
