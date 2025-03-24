@@ -33,7 +33,8 @@ pip install -r requirements.txt
 ```
 
 4. Set up your environment variables:
-- Create a `.env` file in the root directory
+- Create a `.secrets` folder in the root directory
+- Create a `secrets.toml` file inside the `.secrets` folder
 - Add your API keys:
 ```
 GROQ_API_KEY=your_groq_api_key

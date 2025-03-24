@@ -5,6 +5,7 @@ from utils import (
 import base64
 from io import BytesIO
 from PIL import Image
+import toml
 
 # Page config
 st.set_page_config(
@@ -24,6 +25,10 @@ st.markdown("""
     Upload an image and get engaging social media content!
 </p>
 """, unsafe_allow_html=True)
+
+# Load secrets from the secrets.toml file
+secrets = toml.load('.secrets/secrets.toml')
+GROQ_API_KEY = secrets['GROQ']['API_KEY']
 
 # File uploader
 uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
