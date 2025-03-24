@@ -1,4 +1,5 @@
 import streamlit as st
+import os
 from utils import (
     analyze_image_and_generate_content,
 )
@@ -27,8 +28,8 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Load secrets from the secrets.toml file
-secrets = toml.load('.secrets/secrets.toml')
-GROQ_API_KEY = secrets['GROQ']['API_KEY']
+# Load the API key from environment variables
+GROQ_API_KEY = os.getenv('GROQ_API_KEY')
 
 # File uploader
 uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
