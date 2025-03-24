@@ -32,13 +32,12 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-4. Set up your environment variables:
-- Create a `.secrets` folder in the root directory
-- Create a `secrets.toml` file inside the `.secrets` folder
-- Add your API keys:
-```
-GROQ_API_KEY=your_groq_api_key
-```
+4. **Set Up Your API Key**:
+   - Instead of using a `secrets.toml` file, you will set your API key directly in the Streamlit Cloud settings.
+   - Go to your Streamlit Cloud app settings.
+   - Under the "Secrets" section, add your API key as follows:
+     - **Key**: `GROQ_API_KEY`
+     - **Value**: `your_groq_api_key`
 
 5. Run the app:
 ```bash
@@ -85,10 +84,10 @@ git push -u origin main
 
 1. Go to [Streamlit Cloud](https://streamlit.io/cloud)
 2. Connect your GitHub repository
-3. Deploy the app with these settings:
+3. Ensure that you have added your `GROQ_API_KEY` in the Secrets section of your Streamlit Cloud settings.
+4. Deploy the app with these settings:
    - Main file path: `main.py`
    - Python version: 3.8+
-   - Add your environment variables in Streamlit Cloud settings
 
 ## 🔑 Environment Variables
 
