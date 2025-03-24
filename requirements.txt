@@ -6,3 +6,5 @@ httpx>=0.26.0
 openai
 pyperclip
 toml
+utils
+config
