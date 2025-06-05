@@ -41,9 +41,21 @@ if uploaded_file is not None:
     
     # Add a generate button
     if st.button("Generate Content & Hashtags"):
-        # Convert image to base64
+    # Convert image to base64
         buffered = BytesIO()
-        image.save(buffered, format="JPEG")
+        # Convert to RGB if necessary
+        if image.mode in ('RGBA', 'LA') or (image.mode == 'P' and 'transparency' in image.info):
+            # Create a white background image
+            background = Image.new('RGB', image.size, (255, 255, 255))
+            if image.mode == 'P':
+                image = image.convert('RGBA')
+            # Composite the image onto the background
+            background.paste(image, mask=image.split()[-1])
+            image = background
+        elif image.mode != 'RGB':
+            image = image.convert('RGB')
+        
+        image.save(buffered, format="JPEG", quality=95)
         image_base64 = base64.b64encode(buffered.getvalue()).decode()
         
         # Show progress

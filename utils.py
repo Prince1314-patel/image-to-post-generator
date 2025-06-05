@@ -1,18 +1,96 @@
 import httpx
 import json
 import os
+import base64
+import torch
+import logging
+from io import BytesIO
+from PIL import Image
+from transformers import pipeline
 from groq import Groq
+from functools import lru_cache
 from config import GROQ_API_KEY
 
-# Initialize Groq client with custom httpx client
-http_client = httpx.Client(
-    base_url="https://api.groq.com/v1",
-    timeout=60.0
-)
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-client = Groq(
-    api_key=GROQ_API_KEY,
-)
+class AIModelManager:
+    _instance = None
+    _image_to_text = None
+    _groq_client = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(AIModelManager, cls).__new__(cls)
+            cls._instance._initialize_models()
+        return cls._instance
+
+    def _initialize_models(self):
+        """Initialize AI models with proper device selection and optimization"""
+        try:
+            # Check for GPU availability
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+            logger.info(f"Using device: {device}")
+
+            # Initialize BLIP model
+            self._image_to_text = pipeline(
+                "image-to-text",
+                model="Salesforce/blip-image-captioning-base",
+                device=device
+            )
+
+            # Initialize Groq client
+            self._groq_client = Groq(
+                api_key=GROQ_API_KEY,
+                http_client=httpx.Client(
+                    base_url="https://api.groq.com/v1",
+                    timeout=60.0
+                )
+            )
+        except Exception as e:
+            logger.error(f"Error initializing AI models: {str(e)}")
+            raise
+
+    @property
+    def image_to_text(self):
+        return self._image_to_text
+
+    @property
+    def groq_client(self):
+        return self._groq_client
+
+# Initialize the singleton
+ai_manager = AIModelManager()
+
+@lru_cache(maxsize=32)
+def _process_image(image_base64: str) -> Image.Image:
+    """
+    Convert base64 image to PIL Image with caching.
+    Handles RGBA images by converting them to RGB.
+    
+    Args:
+        image_base64 (str): Base64 encoded image
+        
+    Returns:
+        Image.Image: Processed PIL Image in RGB mode
+    """
+    image_data = base64.b64decode(image_base64)
+    image = Image.open(BytesIO(image_data))
+    
+    # Convert RGBA or other modes to RGB if necessary
+    if image.mode in ('RGBA', 'LA') or (image.mode == 'P' and 'transparency' in image.info):
+        # Create a white background image
+        background = Image.new('RGB', image.size, (255, 255, 255))
+        if image.mode == 'P':
+            image = image.convert('RGBA')
+        # Composite the image onto the background
+        background.paste(image, mask=image.split()[-1])
+        image = background
+    elif image.mode != 'RGB':
+        image = image.convert('RGB')
+        
+    return image
 
 def generate_hashtags(post: str, platform: str) -> list:
     """
@@ -40,7 +118,7 @@ IMPORTANT:
 - For {platform} specifically"""
 
     try:
-        response = client.chat.completions.create(
+        response = ai_manager.groq_client.chat.completions.create(
             messages=[{
                 "role": "system",
                 "content": "You are a social media expert that always responds in valid JSON format."
@@ -73,11 +151,12 @@ IMPORTANT:
         return hashtags
         
     except Exception as e:
+        logger.error(f"Error generating hashtags: {str(e)}")
         return ["socialmedia", "post", "trending", "viral", "content"]
 
 def generate_image_caption(image_base64: str) -> str:
     """
-    Generate a detailed caption for an image using Groq's vision model.
+    Generate a detailed caption for an image using BLIP image captioning model.
     
     Args:
         image_base64 (str): Base64 encoded image
@@ -86,39 +165,21 @@ def generate_image_caption(image_base64: str) -> str:
         str: Detailed caption describing the image
     """
     try:
-        response = client.chat.completions.create(
-            messages=[{
-                "role": "user",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": """Analyze this image in detail and describe:
-1. Main subjects/objects
-2. Actions/activities
-3. Setting/environment
-4. Colors and visual elements
-5. Mood/atmosphere
-
-Be specific and descriptive but concise. Your description should be 2-3 sentences long."""
-                    },
-                    {
-                        "type": "image_url",
-                        "image_url": {
-                            "url": f"data:image/jpeg;base64,{image_base64}"
-                        }
-                    }
-                ]
-            }],
-            model="mistral-saba-24b",
-            temperature=0.7,
-            max_tokens=200,
-        )
+        # Use cached image processing
+        image = _process_image(image_base64)
         
-        caption = response.choices[0].message.content.strip()
+        # Generate caption using BLIP
+        result = ai_manager.image_to_text(image)
+        
+        # BLIP returns a list of dictionaries with generated text
+        caption = result[0]['generated_text'] if result else ""
+        
+        # Enhance the caption to be more descriptive
+        caption = f"This image shows {caption.lower()}"
         return caption
         
     except Exception as e:
-        print(f"Error in generate_image_caption: {str(e)}")  # Add debug print
+        logger.error(f"Error in generate_image_caption: {str(e)}")
         return "A captivating image that tells a unique story."
 
 def generate_content_from_caption(caption: str, platform: str) -> str:
@@ -152,7 +213,7 @@ Sometimes the best moments are these simple ones. Who else loves starting their 
 Make it engaging but not overly verbose!"""
 
     try:
-        response = client.chat.completions.create(
+        response = ai_manager.groq_client.chat.completions.create(
             messages=[{
                 "role": "system",
                 "content": f"You are a {platform} expert that creates engaging, medium-length captions."
@@ -170,6 +231,7 @@ Make it engaging but not overly verbose!"""
         return content
         
     except Exception as e:
+        logger.error(f"Error generating content: {str(e)}")
         return "✨ Living for moments like these! Nature's beauty never fails to amaze me 🌿 What's your favorite way to connect with the outdoors? 🌅"
 
 def analyze_image_and_generate_content(image_base64: str, platform: str) -> dict:
@@ -195,11 +257,14 @@ def analyze_image_and_generate_content(image_base64: str, platform: str) -> dict
         
         return {
             "content": content,
-            "hashtags": hashtags
+            "hashtags": hashtags,
+            "caption": caption  # Added for debugging/monitoring
         }
         
     except Exception as e:
+        logger.error(f"Error in content generation pipeline: {str(e)}")
         return {
             "content": "This image looks amazing! Perfect for sharing on social media. What do you think?",
-            "hashtags": ["photooftheday", "instagood", "picoftheday", "beautiful", "photography"]
+            "hashtags": ["photooftheday", "instagood", "picoftheday", "beautiful", "photography"],
+            "caption": "Error processing image"
         }
