@@ -109,7 +109,7 @@ Be specific and descriptive but concise. Your description should be 2-3 sentence
                     }
                 ]
             }],
-            model="llama-3.2-90b-vision-preview",
+            model="mistral-saba-24b",
             temperature=0.7,
             max_tokens=200,
         )

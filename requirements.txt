@@ -8,3 +8,4 @@ pyperclip
 toml
 utils
 config
+python-dotenv
