@@ -3,3 +3,4 @@ venv
 .secrets
 .secrets/secrets.toml
 Dockerfile
+.dockerignore
