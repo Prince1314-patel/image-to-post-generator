@@ -1,12 +1,10 @@
 import httpx
 import json
 import os
-import base64
-import torch
 import logging
+import base64
 from io import BytesIO
 from PIL import Image
-from transformers import pipeline
 from groq import Groq
 from functools import lru_cache
 from config import GROQ_API_KEY, OPENROUTER_API_KEY
@@ -88,19 +86,7 @@ def generate_hashtags(post: str, platform: str) -> list:
     Returns:
         list: List of generated hashtags
     """
-    prompt = f"""You are a social media expert. Generate 5 relevant and trending hashtags for this {platform} post:
-
-{post}
-
-Your response must be a valid JSON array of hashtags without the # symbol. Example:
-["marketing", "business", "success"]
-
-IMPORTANT: 
-- Respond ONLY with the JSON array
-- Maximum 5 hashtags
-- Don't include the # symbol
-- Make them relevant and trending
-- For {platform} specifically"""
+    prompt = f"""You are a social media expert. Generate 5 relevant and trending hashtags for this {platform} post:\n\n{post}\n\nYour response must be a valid JSON array of hashtags without the # symbol. Example:\n[\"marketing\", \"business\", \"success\"]\n\nIMPORTANT: \n- Respond ONLY with the JSON array\n- Maximum 5 hashtags\n- Don't include the # symbol\n- Make them relevant and trending\n- For {platform} specifically"""
 
     try:
         response = ai_manager.groq_client.chat.completions.create(
@@ -190,24 +176,7 @@ def generate_content_from_caption(caption: str, platform: str) -> str:
     Returns:
         str: Generated social media content
     """
-    prompt = f"""You are a {platform} expert. Create a medium-length caption based on this image description:
-
-{caption}
-
-Requirements:
-1. Write 3-4 lines of engaging content
-2. Include a hook or question to encourage engagement
-3. Add 2-3 relevant emojis spread throughout
-4. Tell a mini-story or share a relatable moment
-5. Keep it personal and authentic
-6. Avoid hashtags in the main content
-
-Example format:
-"✨ Golden hour magic hitting different today! Taking in this stunning mountain view while sipping my morning coffee ☕️
-
-Sometimes the best moments are these simple ones. Who else loves starting their day with views like this? 🏔️"
-
-Make it engaging but not overly verbose!"""
+    prompt = f"""You are a {platform} expert. Create a medium-length caption based on this image description:\n\n{caption}\n\nRequirements:\n1. Write 3-4 lines of engaging content\n2. Include a hook or question to encourage engagement\n3. Add 2-3 relevant emojis spread throughout\n4. Tell a mini-story or share a relatable moment\n5. Keep it personal and authentic\n6. Avoid hashtags in the main content\n\nExample format:\n"✨ Golden hour magic hitting different today! Taking in this stunning mountain view while sipping my morning coffee ☕️\n\nSometimes the best moments are these simple ones. Who else loves starting their day with views like this? 🏔️"\n\nMake it engaging but not overly verbose!"""
 
     try:
         response = ai_manager.groq_client.chat.completions.create(
