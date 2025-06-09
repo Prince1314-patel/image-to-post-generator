@@ -9,7 +9,8 @@ from PIL import Image
 from transformers import pipeline
 from groq import Groq
 from functools import lru_cache
-from config import GROQ_API_KEY
+from config import GROQ_API_KEY, OPENROUTER_API_KEY
+import requests
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -17,7 +18,6 @@ logger = logging.getLogger(__name__)
 
 class AIModelManager:
     _instance = None
-    _image_to_text = None
     _groq_client = None
 
     def __new__(cls):
@@ -29,17 +29,6 @@ class AIModelManager:
     def _initialize_models(self):
         """Initialize AI models with proper device selection and optimization"""
         try:
-            # Check for GPU availability
-            device = "cuda" if torch.cuda.is_available() else "cpu"
-            logger.info(f"Using device: {device}")
-
-            # Initialize BLIP model
-            self._image_to_text = pipeline(
-                "image-to-text",
-                model="Salesforce/blip-image-captioning-base",
-                device=device
-            )
-
             # Initialize Groq client
             self._groq_client = Groq(
                 api_key=GROQ_API_KEY,
@@ -51,10 +40,6 @@ class AIModelManager:
         except Exception as e:
             logger.error(f"Error initializing AI models: {str(e)}")
             raise
-
-    @property
-    def image_to_text(self):
-        return self._image_to_text
 
     @property
     def groq_client(self):
@@ -156,28 +141,40 @@ IMPORTANT:
 
 def generate_image_caption(image_base64: str) -> str:
     """
-    Generate a detailed caption for an image using BLIP image captioning model.
-    
+    Generate a detailed caption for an image using OpenRouter's Llama 3.2 Vision model.
     Args:
         image_base64 (str): Base64 encoded image
-    
     Returns:
         str: Detailed caption describing the image
     """
     try:
-        # Use cached image processing
-        image = _process_image(image_base64)
-        
-        # Generate caption using BLIP
-        result = ai_manager.image_to_text(image)
-        
-        # BLIP returns a list of dictionaries with generated text
-        caption = result[0]['generated_text'] if result else ""
-        
-        # Enhance the caption to be more descriptive
-        caption = f"This image shows {caption.lower()}"
+        headers = {
+            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        data = {
+            "model": "meta-llama/llama-3.2-11b-vision-instruct:free",
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": "Describe this image in detail."},
+                        {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_base64}"}}
+                    ]
+                }
+            ],
+            "max_tokens": 128
+        }
+        response = requests.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers=headers,
+            json=data,
+            timeout=60
+        )
+        response.raise_for_status()
+        result = response.json()
+        caption = result["choices"][0]["message"]["content"].strip()
         return caption
-        
     except Exception as e:
         logger.error(f"Error in generate_image_caption: {str(e)}")
         return "A captivating image that tells a unique story."
